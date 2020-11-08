@@ -20,7 +20,7 @@ const BuildSetCalculatorItemControl: React.FC<BuildSetCalculatorItemControlProps
   ({ label, index, updateValue }) => {
     const [numericValue, setNumericValue] = React.useState<number | null>(null);
 
-    React.useEffect(() => updateValue(index, numericValue), [numericValue]);
+    React.useEffect(() => updateValue(index, numericValue), [index, updateValue, numericValue]);
 
     const onChangeTextFieldValue = React.useCallback(
       (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
@@ -34,6 +34,26 @@ const BuildSetCalculatorItemControl: React.FC<BuildSetCalculatorItemControlProps
     return (
       <TextField label={label} iconProps={iconProps} onChange={onChangeTextFieldValue} />
     );
+  };
+
+const invalidCalculateNumbers: Set<number | null> = new Set<number | null>([null, Number.NaN, NaN]);
+
+const attemptCalculateSum: (values: (number | null)[]) => number | null =
+  (values: (number | null)[]) => {
+    let sum: number = 0;
+    let canCalculate: boolean = true;
+
+    for (let i = 0; i < values.length; i++) {
+      if (invalidCalculateNumbers.has(values[i])) {
+        canCalculate = false;
+        sum = 0;
+        break;
+      } else {
+        sum += values[i] as number;
+      }
+    }
+
+    return canCalculate ? sum : null;
   };
 
 export const BuildSetCalculator: React.FC<BuildSetCalculatorConfig> = ({ requirements, builds }) => {
@@ -52,26 +72,6 @@ export const BuildSetCalculator: React.FC<BuildSetCalculatorConfig> = ({ require
   const [netProfitLabel, setNetProfitLabel] = React.useState('');
 
   const maddenTax: number = 10;
-
-  const invalidCalculateNumbers: Set<number | null> = new Set<number | null>([null, Number.NaN, NaN]);
-
-  const attemptCalculateSum: (values: (number | null)[]) => number | null =
-    (values: (number | null)[]) => {
-      let sum: number = 0;
-      let canCalculate: boolean = true;
-
-      for (let i = 0; i < values.length; i++) {
-        if (invalidCalculateNumbers.has(values[i])) {
-          canCalculate = false;
-          sum = 0;
-          break;
-        } else {
-          sum += values[i] as number;
-        }
-      }
-
-      return canCalculate ? sum : null;
-    };
 
   React.useEffect(
     () => {
@@ -106,12 +106,12 @@ export const BuildSetCalculator: React.FC<BuildSetCalculatorConfig> = ({ require
   const onRequirementsValueChange = React.useCallback((index: number, newValue: number | null) => {
     requirementsValues[index] = newValue;
     setRequirementsValues([...requirementsValues]);
-  }, []);
+  }, [requirementsValues]);
 
   const onBuildsValueChange = React.useCallback((index: number, newValue: number | null) => {
     buildsValues[index] = newValue;
     setBuildsValues([...buildsValues]);
-  }, []);
+  }, [buildsValues]);
 
   return (
     <React.Fragment>
