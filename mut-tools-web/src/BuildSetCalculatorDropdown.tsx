@@ -10,7 +10,7 @@ export const BuildSetCalculatorDropdown: React.FC<BuildSetCalculatorConfigMap> =
 
     React.useEffect(
       () => updateSelected(selectedItem ? selectedItem.key as string : ''),
-      [selectedItem]);
+      [updateSelected, selectedItem]);
 
     const dropdownOptions: IDropdownOption[] = [];
 
