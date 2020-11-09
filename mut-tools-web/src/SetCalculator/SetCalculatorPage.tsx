@@ -38,7 +38,7 @@ const SetCalculatorDropdown: React.FC<SetCalculatorConfigMap> =
       options.push(<MenuItem value={key} key={`${id}_${key}`}>{value}</MenuItem>));
 
     return (
-      <FormControl variant="outlined" fullWidth>
+      <FormControl variant='outlined' fullWidth>
         <InputLabel htmlFor={`${id}_label`}>{label}</InputLabel>
         <Select
           labelId={`${id}_label`}
@@ -157,7 +157,10 @@ export const SetCalculatorPage: React.FC = () => {
   const [canCalculateRequirementsSum, setCanCalculateRequirementsSum] = React.useState(false);
   const [canCalculateBuildsSum, setCanCalculateBuildsSum] = React.useState(false);
   const [canCalculateProfit, setCanCalculateProfit] = React.useState(false);
-  const [netProfitLabel, setNetProfitLabel] = React.useState('');
+  const [proceedsLabel, setProceedsLabel] = React.useState('');
+  const [maddenTaxLabel, setMaddenTaxLabel] = React.useState('');
+  const [expensesLabel, setExpensesLabel] = React.useState('');
+  const [profitLabel, setProfitLabel] = React.useState('');
 
   const maddenTax: number = 10;
 
@@ -194,12 +197,28 @@ export const SetCalculatorPage: React.FC = () => {
     [canCalculateRequirementsSum, canCalculateBuildsSum]);
 
   React.useEffect(
+    () => setExpensesLabel(isNaN(sumRequirements) ? 'Cannot calculate' : sumRequirements.toString()),
+    [sumRequirements]);
+
+  React.useEffect(
+    () => {
+      if (isNaN(sumBuilds)) {
+        setProceedsLabel('Cannot calculate');
+        setMaddenTaxLabel('Cannot calculate');
+      } else {
+        setProceedsLabel(sumBuilds.toString());
+        setMaddenTaxLabel(roundTo(sumBuilds * (maddenTax / 100), 2).toString());
+      }
+    },
+    [sumBuilds]);
+
+  React.useEffect(
     () => {
       const profit: number = canCalculateProfit
         ? roundTo((sumBuilds * (1 - (maddenTax / 100)) - sumRequirements), 2)
         : NaN;
 
-      setNetProfitLabel(invalidCalculateNumbers.has(profit) ? 'Cannot calculate' : profit.toString());
+      setProfitLabel(invalidCalculateNumbers.has(profit) ? 'Cannot calculate' : profit.toString());
     },
     [canCalculateProfit, sumRequirements, sumBuilds]);
 
@@ -252,12 +271,16 @@ export const SetCalculatorPage: React.FC = () => {
               updateSelected={onSetDropdownChange} />
           </Grid>
         </Grid>
-        <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
-          <Grid item xs={12}>
-            <Typography display="block" variant='overline'>Inputs &amp; Outputs: Coin Values</Typography>
-            <Divider />
-          </Grid>
-        </Grid>
+        {
+          set
+            ? <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
+              <Grid item xs={12}>
+                <Typography display="block" variant='overline'>Inputs &amp; Outputs: Coin Values</Typography>
+                <Divider />
+              </Grid>
+            </Grid>
+            : null
+        }
         <Grid container item spacing={3} xs={12} sm={6} alignItems='stretch' direction='column'>
           {set?.requirements.map(
             (item: SetCalculatorSetItemProps, index: number) =>
@@ -282,31 +305,83 @@ export const SetCalculatorPage: React.FC = () => {
               </Grid>
           )}
         </Grid>
-        <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
-          <Grid item xs={12}>
-            <Typography display="block" variant='overline'>Profit</Typography>
-            <Divider />
-          </Grid>
-        </Grid>
-        <Grid container item spacing={3} xs={12} justify='flex-end' alignItems='stretch'>
-          <Grid item xs={6}>
-            {set
-              ? <TextField
-                label="Profit"
-                value={netProfitLabel}
-                InputProps={{
-                  readOnly: true
-                }}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                variant="outlined"
-                fullWidth
-              />
-              : null}
-          </Grid>
-        </Grid>
-      </Grid >
+        {
+          set
+            ? <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
+              <Grid item xs={12}>
+                <Typography display="block" variant='overline'>Calculations</Typography>
+                <Divider />
+              </Grid>
+            </Grid>
+            : null
+        }
+        {
+          set
+            ? <Grid container item spacing={3} xs={12} justify='flex-end' alignItems='stretch' direction='row'>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label='Proceeds'
+                  value={proceedsLabel}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant='outlined'
+                  fullWidth
+                  disabled={proceedsLabel === 'Cannot calculate'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label='Madden Tax'
+                  value={maddenTaxLabel}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant='outlined'
+                  fullWidth
+                  disabled={proceedsLabel === 'Cannot calculate'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label='Costs'
+                  value={expensesLabel}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant='outlined'
+                  fullWidth
+                  disabled={proceedsLabel === 'Cannot calculate'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label='Profit'
+                  value={profitLabel}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant='outlined'
+                  fullWidth
+                  disabled={proceedsLabel === 'Cannot calculate'}
+                />
+              </Grid>
+            </Grid>
+            : null
+        }
+      </Grid>
     </Grid>
   );
 };
