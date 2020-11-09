@@ -1,70 +1,65 @@
 import React, { useEffect } from 'react';
+import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
-import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
 import {
-  BuildSetCalculatorCategoryConfig,
-  BuildSetCalculatorConfigMap,
-  BuildSetCalculatorSetConfig,
-  BuildSetCalculatorSetItemProps
-} from './BuildSetCalculatorCommon';
-import CATEGORY_CONFIG from './BuildSetCalculatorPageConfig';
+  SetCalculatorCategoryConfig,
+  SetCalculatorConfigMap,
+  SetCalculatorSetConfig,
+  SetCalculatorSetItemProps
+} from './SetCalculatorCommon';
+import CATEGORY_CONFIG from './config/setConfig';
 
-interface BuildSetCalculatorItemControlProps extends BuildSetCalculatorSetItemProps {
+interface SetCalculatorItemControlProps extends SetCalculatorSetItemProps {
   id: string;
   index: number;
   updateValue: (index: number, newValue: number | null) => void;
 }
 
-const useStyles = makeStyles((theme) => ({
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
-  },
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-  },
-}));
-
-const BuildSetCalculatorDropdown: React.FC<BuildSetCalculatorConfigMap> =
+const SetCalculatorDropdown: React.FC<SetCalculatorConfigMap> =
   ({ id, label, map, updateSelected }) => {
-    const classes = useStyles();
-
     const onChange = React.useCallback(
       (event: React.ChangeEvent<
         {
           name?: string | undefined;
           value: unknown
         }>): void => {
-        updateSelected(event.target.value as string);
+        updateSelected(event.target.value as string || '');
       },
       [updateSelected]);
 
-    const options: React.ReactElement[] = [];
-    map.forEach((value: string, key: string) => options.push(<option value={key}>{value}</option>));
+    const options: JSX.Element[] = [];
+    map.forEach((value: string, key: string) =>
+      options.push(<MenuItem value={key} key={`${id}_${key}`}>{value}</MenuItem>));
 
     return (
-      <FormControl variant="outlined" className={classes.formControl}>
-        <InputLabel htmlFor={id}>{label}</InputLabel>
+      <FormControl variant="outlined" fullWidth>
+        <InputLabel htmlFor={`${id}_label`}>{label}</InputLabel>
         <Select
-          native
+          labelId={`${id}_label`}
+          id={id}
           onChange={onChange}
           label={label}
-          inputProps={{
-            id: id
-          }}
+          autoWidth
+          fullWidth
+          defaultValue=''
+          disabled={!options.length}
         >
-          <option aria-label="Select..." value="" />
+          <MenuItem value=''>
+            <em>Select a value...</em>
+          </MenuItem>
           {options}
         </Select>
       </FormControl>
     );
   };
 
-const BuildSetCalculatorItemControl: React.FC<BuildSetCalculatorItemControlProps> =
+const SetCalculatorItemControl: React.FC<SetCalculatorItemControlProps> =
   ({ id, label, index, updateValue }) => {
     const [numericValue, setNumericValue] = React.useState<number | null>(null);
 
@@ -81,12 +76,15 @@ const BuildSetCalculatorItemControl: React.FC<BuildSetCalculatorItemControlProps
 
     return (
       <TextField
+        id={id}
         label={label}
-        type="number"
+        placeholder='Coins'
+        fullWidth
         InputLabelProps={{
-          shrink: true
+          shrink: true,
         }}
-        variant="outlined"
+        variant='outlined'
+        type='number'
         onChange={onChangeTextFieldValue}
       />
     );
@@ -121,17 +119,17 @@ const roundTo = function (num: number, places: number) {
   return Math.round(num * factor) / factor;
 };
 
-export const BuildSetCalculatorPage: React.FC = () => {
+export const SetCalculatorPage: React.FC = () => {
   const categoryDropdownOptions: Map<string, string> = new Map<string, string>();
   CATEGORY_CONFIG.forEach(
-    (value: BuildSetCalculatorCategoryConfig, key: string) =>
+    (value: SetCalculatorCategoryConfig, key: string) =>
       categoryDropdownOptions.set(key, value.label));
 
   const [categoryId, setCategoryId] = React.useState('');
-  const [category, setCategory] = React.useState<BuildSetCalculatorCategoryConfig | undefined>();
+  const [category, setCategory] = React.useState<SetCalculatorCategoryConfig | undefined>();
   const [setDropdownOptions, setSetDropdownOptions] = React.useState<Map<string, string>>();
   const [setId, setSetId] = React.useState('');
-  const [set, setSet] = React.useState<BuildSetCalculatorSetConfig>();
+  const [set, setSet] = React.useState<SetCalculatorSetConfig>();
 
   useEffect(() => setCategory(CATEGORY_CONFIG.get(categoryId)), [categoryId]);
 
@@ -139,7 +137,7 @@ export const BuildSetCalculatorPage: React.FC = () => {
     const newSetDropdownOptions: Map<string, string> = new Map<string, string>();
 
     category?.map?.forEach(
-      (value: BuildSetCalculatorSetConfig, key: string) =>
+      (value: SetCalculatorSetConfig, key: string) =>
         newSetDropdownOptions.set(key, value.setName));
 
     setSetDropdownOptions(newSetDropdownOptions);
@@ -228,58 +226,87 @@ export const BuildSetCalculatorPage: React.FC = () => {
     [buildsValues]);
 
   return (
-    <Grid container spacing={3}>
-      <Grid item xs={12} md={6}>
-        <BuildSetCalculatorDropdown
-          id='buildSetCalculatorCategoryDropdown'
-          label='Category'
-          map={categoryDropdownOptions}
-          updateSelected={onCategoryDropdownChange} />
-      </Grid>
-      <Grid item xs={12} md={6}>
-        {setDropdownOptions?.size
-          ? <BuildSetCalculatorDropdown
-            id='buildSetCalculatorSetDropdown'
-            label='Set'
-            map={setDropdownOptions}
-            updateSelected={onSetDropdownChange} />
-          : null}
-      </Grid>
-      <Grid item xs={12} md={6}>
-        {set?.requirements.map(
-          (item: BuildSetCalculatorSetItemProps, index: number) =>
-            <BuildSetCalculatorItemControl
-              id={`requirements${index}`}
-              label={item.label}
-              index={index}
-              updateValue={onRequirementsValueChange} />
-        )}
-      </Grid>
-      <Grid item xs={12} md={6}>
-        {set?.builds.map(
-          (item: BuildSetCalculatorSetItemProps, index: number) =>
-            <BuildSetCalculatorItemControl
-              id={`builds${index}`}
-              label={item.label}
-              index={index}
-              updateValue={onBuildsValueChange} />
-        )}
-      </Grid>
-      <Grid item xs={12}>
-        {set
-          ? <TextField
-            label="Profit"
-            value={netProfitLabel}
-            InputProps={{
-              readOnly: true
-            }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            variant="outlined"
-          />
-          : null}
-      </Grid>
+    <Grid container justify='center'>
+      <Grid container item xs={12} md={10} lg={8} spacing={3} justify='center'>
+        <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
+          <Grid item xs={12}>
+            <Typography display="block" variant='overline'>Pick a set</Typography>
+            <Divider />
+          </Grid>
+        </Grid>
+        <Grid container item spacing={3} xs={12} sm={6} alignItems='stretch'>
+          <Grid item xs>
+            <SetCalculatorDropdown
+              id='buildSetCalculatorCategoryDropdown'
+              label='Category'
+              map={categoryDropdownOptions}
+              updateSelected={onCategoryDropdownChange} />
+          </Grid>
+        </Grid>
+        <Grid container item spacing={3} xs={12} sm={6} alignItems='stretch'>
+          <Grid item xs={12}>
+            <SetCalculatorDropdown
+              id='buildSetCalculatorSetDropdown'
+              label='Set'
+              map={setDropdownOptions || new Map<string, string>()}
+              updateSelected={onSetDropdownChange} />
+          </Grid>
+        </Grid>
+        <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
+          <Grid item xs={12}>
+            <Typography display="block" variant='overline'>Input coin values</Typography>
+            <Divider />
+          </Grid>
+        </Grid>
+        <Grid container item spacing={3} xs={12} sm={6} alignItems='stretch' direction='column'>
+          {set?.requirements.map(
+            (item: SetCalculatorSetItemProps, index: number) =>
+              <Grid item xs={12} key={`requirements${index}_grid`}>
+                <SetCalculatorItemControl
+                  id={`requirements${index}`}
+                  label={item.label}
+                  index={index}
+                  updateValue={onRequirementsValueChange} />
+              </Grid>
+          )}
+        </Grid>
+        <Grid container item spacing={3} xs={12} sm={6} alignItems='stretch' direction='column'>
+          {set?.builds.map(
+            (item: SetCalculatorSetItemProps, index: number) =>
+              <Grid item xs={12} key={`builds${index}_grid`}>
+                <SetCalculatorItemControl
+                  id={`builds${index}`}
+                  label={item.label}
+                  index={index}
+                  updateValue={onBuildsValueChange} />
+              </Grid>
+          )}
+        </Grid>
+        <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
+          <Grid item xs={12}>
+            <Typography display="block" variant='overline'>Profit</Typography>
+            <Divider />
+          </Grid>
+        </Grid>
+        <Grid container item spacing={3} xs={12} justify='flex-end' alignItems='stretch'>
+          <Grid item xs={6}>
+            {set
+              ? <TextField
+                label="Profit"
+                value={netProfitLabel}
+                InputProps={{
+                  readOnly: true
+                }}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                variant="outlined"
+                fullWidth
+              />
+              : null}
+          </Grid>
+        </Grid>
+      </Grid >
     </Grid>
   );
 };

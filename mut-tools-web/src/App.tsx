@@ -15,7 +15,7 @@ import Link from '@material-ui/core/Link';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import { mainListItems } from './listItems';
-import { BuildSetCalculatorPage } from './BuildSetCalculatorPage';
+import { SetCalculatorPage } from './SetCalculator/SetCalculatorPage';
 
 function Copyright() {
   return (
@@ -158,7 +158,7 @@ export default function App() {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          <BuildSetCalculatorPage />
+          <SetCalculatorPage />
           <Box pt={4}>
             <Copyright />
           </Box>

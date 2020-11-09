@@ -1,16 +1,16 @@
 import React from 'react';
 import { Story, Meta } from '@storybook/react';
 
-import { BuildSetCalculatorPage } from '../BuildSetCalculatorPage';
+import { SetCalculatorPage } from '../SetCalculator/SetCalculatorPage';
 
 export default {
-    title: 'Example/BuildSetCalculatorPage',
-    component: BuildSetCalculatorPage,
+    title: 'Example/SetCalculatorPage',
+    component: SetCalculatorPage,
     argTypes: {
         backgroundColor: { control: 'color' },
     },
 } as Meta;
 
-const Template: Story = (args) => <BuildSetCalculatorPage />;
+const Template: Story = (args) => <SetCalculatorPage />;
 
 export const MostFeared = Template.bind({});
