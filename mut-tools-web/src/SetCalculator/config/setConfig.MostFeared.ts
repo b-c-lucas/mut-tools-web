@@ -1,7 +1,7 @@
 import {
-  BuildSetCalculatorCategoryConfig,
-  BuildSetCalculatorSetConfig
-} from './BuildSetCalculatorCommon';
+  SetCalculatorCategoryConfig,
+  SetCalculatorSetConfig
+} from '../SetCalculatorCommon';
 
 interface ConfigDefinition {
   MF_85: string;
@@ -27,7 +27,7 @@ const LABELS: ConfigDefinition = {
   MF_92_RE: '92 OVR Most Feared RE'
 };
 
-const config: Map<string, BuildSetCalculatorSetConfig> = new Map<string, BuildSetCalculatorSetConfig>();
+const config: Map<string, SetCalculatorSetConfig> = new Map<string, SetCalculatorSetConfig>();
 
 config.set(IDS.MF_90, {
   setName: LABELS.MF_90,
@@ -124,7 +124,7 @@ config.set(IDS.MF_92_RE, {
   ]
 });
 
-export const CATEGORY_CONFIG: BuildSetCalculatorCategoryConfig = {
+export const CATEGORY_CONFIG: SetCalculatorCategoryConfig = {
   id: 'MostFeared',
   label: 'Most Feared',
   map: config
