@@ -6,9 +6,11 @@ import {
 interface ConfigDefinition {
 }
 
+// eslint-disable-next-line
 const IDS: ConfigDefinition = {
 };
 
+// eslint-disable-next-line
 const LABELS: ConfigDefinition = {
 };
 

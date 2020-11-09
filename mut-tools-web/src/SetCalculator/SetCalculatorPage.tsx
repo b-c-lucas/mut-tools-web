@@ -78,7 +78,7 @@ const SetCalculatorItemControl: React.FC<SetCalculatorItemControlProps> =
       <TextField
         id={id}
         label={label}
-        placeholder='Coins'
+        placeholder='# of Coins'
         fullWidth
         InputLabelProps={{
           shrink: true,
@@ -254,7 +254,7 @@ export const SetCalculatorPage: React.FC = () => {
         </Grid>
         <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
           <Grid item xs={12}>
-            <Typography display="block" variant='overline'>Input coin values</Typography>
+            <Typography display="block" variant='overline'>Inputs &amp; Outputs: Coin Values</Typography>
             <Divider />
           </Grid>
         </Grid>
@@ -264,7 +264,7 @@ export const SetCalculatorPage: React.FC = () => {
               <Grid item xs={12} key={`requirements${index}_grid`}>
                 <SetCalculatorItemControl
                   id={`requirements${index}`}
-                  label={item.label}
+                  label={`INPUT: ${item.label}`}
                   index={index}
                   updateValue={onRequirementsValueChange} />
               </Grid>
@@ -276,7 +276,7 @@ export const SetCalculatorPage: React.FC = () => {
               <Grid item xs={12} key={`builds${index}_grid`}>
                 <SetCalculatorItemControl
                   id={`builds${index}`}
-                  label={item.label}
+                  label={`OUTPUT: ${item.label}`}
                   index={index}
                   updateValue={onBuildsValueChange} />
               </Grid>
