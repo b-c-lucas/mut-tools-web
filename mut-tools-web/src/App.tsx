@@ -1,15 +1,26 @@
 import React from 'react';
-import './App.css';
+import Container from '@material-ui/core/Container';
+import Typography from '@material-ui/core/Typography';
+import Box from '@material-ui/core/Box';
+import Link from '@material-ui/core/Link';
 import { BuildSetCalculatorPage } from './BuildSetCalculatorPage';
+import Dashboard from './Dashboard';
 
-function App() {
+function Copyright() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <BuildSetCalculatorPage />
-      </header>
-    </div>
+    <Typography variant="body2" color="textSecondary" align="center">
+      {'Copyright © '}
+      <Link color="inherit" href="https://material-ui.com/">
+        Your Website
+      </Link>{' '}
+      {new Date().getFullYear()}
+      {'.'}
+    </Typography>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <Dashboard />
+  );
+}

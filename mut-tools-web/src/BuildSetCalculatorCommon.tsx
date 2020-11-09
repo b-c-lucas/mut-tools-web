@@ -1,14 +1,23 @@
-export interface BuildSetCalculatorItemProps {
+export interface BuildSetCalculatorSetItemProps {
   label: string;
+  equivalent?: string;
 }
 
-export interface BuildSetCalculatorConfig {
+export interface BuildSetCalculatorCategoryConfig {
+  id: string;
+  label: string;
+  map: Map<string, BuildSetCalculatorSetConfig>;
+}
+
+export interface BuildSetCalculatorSetConfig {
   setName: string;
-  requirements: BuildSetCalculatorItemProps[];
-  builds: BuildSetCalculatorItemProps[];
+  requirements: BuildSetCalculatorSetItemProps[];
+  builds: BuildSetCalculatorSetItemProps[];
 }
 
 export interface BuildSetCalculatorConfigMap {
-  map: Map<string, BuildSetCalculatorConfig>;
+  id: string;
+  label: string;
+  map: Map<string, string>;
   updateSelected: (key: string) => void;
 }
