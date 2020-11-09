@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import InputLabel from '@material-ui/core/InputLabel';
-import Paper from '@material-ui/core/Paper';
 import Select from '@material-ui/core/Select';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
@@ -209,7 +208,7 @@ export const BuildSetCalculatorPage: React.FC = () => {
   const onRequirementsValueChange = React.useCallback(
     (index: number, newValue: number | null) => {
       if (!requirementsValues) {
-        throw 'Need requirements values';
+        throw new Error('Need requirements values');
       }
 
       requirementsValues[index] = newValue;
@@ -220,7 +219,7 @@ export const BuildSetCalculatorPage: React.FC = () => {
   const onBuildsValueChange = React.useCallback(
     (index: number, newValue: number | null) => {
       if (!buildsValues) {
-        throw 'Need builds values';
+        throw new Error('Need builds values');
       }
 
       buildsValues[index] = newValue;
