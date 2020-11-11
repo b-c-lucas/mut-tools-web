@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Divider from '@material-ui/core/Divider';
 import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
@@ -18,18 +18,21 @@ import CATEGORY_CONFIG from './config/setConfig';
 interface SetCalculatorItemControlProps extends SetCalculatorSetItemProps {
   id: string;
   index: number;
-  updateValue: (index: number, newValue: number | null) => void;
+  updateValue: (index: number, newValue: number) => void;
 }
 
+const MADDEN_TAX: number = 10;
+
 const SetCalculatorDropdown: React.FC<SetCalculatorConfigMap> =
-  ({ id, label, map, updateSelected }) => {
+  ({ id, label, map, value, updateSelected }) => {
     const onChange = React.useCallback(
       (event: React.ChangeEvent<
         {
           name?: string | undefined;
           value: unknown
         }>): void => {
-        updateSelected(event.target.value as string || '');
+        const newValue: string = event.target.value as string || '';
+        updateSelected(newValue);
       },
       [updateSelected]);
 
@@ -38,7 +41,7 @@ const SetCalculatorDropdown: React.FC<SetCalculatorConfigMap> =
       options.push(<MenuItem value={key} key={`${id}_${key}`}>{value}</MenuItem>));
 
     return (
-      <FormControl variant="outlined" fullWidth>
+      <FormControl variant='outlined' fullWidth>
         <InputLabel htmlFor={`${id}_label`}>{label}</InputLabel>
         <Select
           labelId={`${id}_label`}
@@ -48,6 +51,7 @@ const SetCalculatorDropdown: React.FC<SetCalculatorConfigMap> =
           autoWidth
           fullWidth
           defaultValue=''
+          value={value}
           disabled={!options.length}
         >
           <MenuItem value=''>
@@ -61,17 +65,11 @@ const SetCalculatorDropdown: React.FC<SetCalculatorConfigMap> =
 
 const SetCalculatorItemControl: React.FC<SetCalculatorItemControlProps> =
   ({ id, label, index, updateValue }) => {
-    const [numericValue, setNumericValue] = React.useState<number | null>(null);
-
-    React.useEffect(() => updateValue(index, numericValue), [index, updateValue, numericValue]);
-
-    const onChangeTextFieldValue = React.useCallback(
+    const onChange = React.useCallback(
       (event: React.ChangeEvent<HTMLInputElement>) => {
-        const val: string = (event.target.value || '').trim();
-        const newNumeric: (number | null) = val.length ? Number(val) : Number.NaN;
-        setNumericValue(newNumeric === Number.NaN ? null : newNumeric);
+        updateValue(index, parseInt(event.target.value));
       },
-      [],
+      [index, updateValue],
     );
 
     return (
@@ -80,39 +78,37 @@ const SetCalculatorItemControl: React.FC<SetCalculatorItemControlProps> =
         label={label}
         placeholder='# of Coins'
         fullWidth
+        inputProps={{
+          min: 0,
+          step: 1
+        }}
         InputLabelProps={{
           shrink: true,
         }}
         variant='outlined'
         type='number'
-        onChange={onChangeTextFieldValue}
+        onChange={onChange}
       />
     );
   };
 
-const invalidCalculateNumbers: Set<number | null> = new Set<number | null>([null, Number.NaN, NaN]);
+const attemptCalculateSum: (values: number[]) => number = (values: number[]) => {
+  if (!values || !values.length) {
+    return NaN;
+  }
 
-const attemptCalculateSum: (values: (number | null)[] | undefined) => number | null =
-  (values: (number | null)[] | undefined) => {
-    if (!values) {
-      return null;
+  let sum: number = 0;
+
+  for (let i = 0; i < values.length; i++) {
+    if (isNaN(values[i])) {
+      return NaN;
     }
 
-    let sum: number = 0;
-    let canCalculate: boolean = true;
+    sum += values[i] as number;
+  }
 
-    for (let i = 0; i < values.length; i++) {
-      if (invalidCalculateNumbers.has(values[i])) {
-        canCalculate = false;
-        sum = 0;
-        break;
-      } else {
-        sum += values[i] as number;
-      }
-    }
-
-    return canCalculate ? sum : null;
-  };
+  return sum;
+};
 
 const roundTo = function (num: number, places: number) {
   const factor = 10 ** places;
@@ -122,8 +118,11 @@ const roundTo = function (num: number, places: number) {
 export const SetCalculatorPage: React.FC = () => {
   const categoryDropdownOptions: Map<string, string> = new Map<string, string>();
   CATEGORY_CONFIG.forEach(
-    (value: SetCalculatorCategoryConfig, key: string) =>
-      categoryDropdownOptions.set(key, value.label));
+    (value: SetCalculatorCategoryConfig, key: string) => {
+      if (value?.map?.size) {
+        categoryDropdownOptions.set(key, value.label);
+      }
+    });
 
   const [categoryId, setCategoryId] = React.useState('');
   const [category, setCategory] = React.useState<SetCalculatorCategoryConfig | undefined>();
@@ -131,99 +130,98 @@ export const SetCalculatorPage: React.FC = () => {
   const [setId, setSetId] = React.useState('');
   const [set, setSet] = React.useState<SetCalculatorSetConfig>();
 
-  useEffect(() => setCategory(CATEGORY_CONFIG.get(categoryId)), [categoryId]);
+  const onCategoryDropdownChange = React.useCallback((key: string) => {
+    if (key !== categoryId) {
+      const newCategory: SetCalculatorCategoryConfig | undefined = CATEGORY_CONFIG.get(key);
+      const newSetDropdownOptions: Map<string, string> = new Map<string, string>();
+      newCategory?.map?.forEach(
+        (value: SetCalculatorSetConfig, key: string) =>
+          newSetDropdownOptions.set(key, value.setName));
 
-  useEffect(() => {
-    const newSetDropdownOptions: Map<string, string> = new Map<string, string>();
+      setSet(undefined);
+      setSetId('');
+      setSetDropdownOptions(newSetDropdownOptions);
+      setCategory(newCategory);
+      setCategoryId(key);
+    }
+  }, [categoryId]);
 
-    category?.map?.forEach(
-      (value: SetCalculatorSetConfig, key: string) =>
-        newSetDropdownOptions.set(key, value.setName));
+  const onSetDropdownChange = React.useCallback((key: string) => {
+    if (key !== setId) {
+      if (category && category.map) {
+        setSetId(key);
+        setSet(category.map.get(key));
+      } else {
+        setSet(undefined);
+        setSetId('');
+      }
+    }
+  }, [category, setId]);
 
-    setSetDropdownOptions(newSetDropdownOptions);
-  }, [category]);
-
-  useEffect(() => setSet(category?.map?.get(setId)), [category, setId]);
-
-  const onCategoryDropdownChange = React.useCallback((key: string) => setCategoryId(key), []);
-  const onSetDropdownChange = React.useCallback((key: string) => setSetId(key), []);
-
-  const [requirementsValues, setRequirementsValues] = React.useState<(number | null)[]>();
-  const [buildsValues, setBuildsValues] = React.useState<(number | null)[]>();
+  const [requirementsValues, setRequirementsValues] = React.useState<number[]>([]);
+  const [buildsValues, setBuildsValues] = React.useState<number[]>([]);
 
   const [sumRequirements, setSumRequirements] = React.useState(0);
   const [sumBuilds, setSumBuilds] = React.useState(0);
 
-  const [canCalculateRequirementsSum, setCanCalculateRequirementsSum] = React.useState(false);
-  const [canCalculateBuildsSum, setCanCalculateBuildsSum] = React.useState(false);
-  const [canCalculateProfit, setCanCalculateProfit] = React.useState(false);
-  const [netProfitLabel, setNetProfitLabel] = React.useState('');
+  const [proceedsLabel, setProceedsLabel] = React.useState('');
+  const [maddenTaxLabel, setMaddenTaxLabel] = React.useState('');
+  const [expensesLabel, setExpensesLabel] = React.useState('');
+  const [profitLabel, setProfitLabel] = React.useState('');
 
-  const maddenTax: number = 10;
-
-  React.useEffect(
-    () => {
-      if (set) {
-        setRequirementsValues(set.requirements.map(_ => null));
-        setBuildsValues(set.builds.map(_ => null));
-      } else {
-        setRequirementsValues([null]);
-        setBuildsValues([null]);
-      }
-    },
-    [set]);
+  React.useEffect(() => {
+    if (set) {
+      setRequirementsValues(set.requirements.map(_ => NaN));
+      setBuildsValues(set.builds.map(_ => NaN));
+    } else {
+      setRequirementsValues([]);
+      setBuildsValues([]);
+    }
+  }, [set]);
 
   React.useEffect(
-    () => {
-      const attemptCalculate = attemptCalculateSum(requirementsValues);
-      setCanCalculateRequirementsSum(attemptCalculate !== null);
-      setSumRequirements(attemptCalculate || Number.NaN);
-    },
+    () => setSumRequirements(attemptCalculateSum(requirementsValues)),
     [requirementsValues]);
 
   React.useEffect(
-    () => {
-      const attemptCalculate = attemptCalculateSum(buildsValues);
-      setCanCalculateBuildsSum(attemptCalculate !== null);
-      setSumBuilds(attemptCalculate || Number.NaN);
-    },
+    () => setSumBuilds(attemptCalculateSum(buildsValues)),
     [buildsValues]);
 
-  React.useEffect(
-    () => setCanCalculateProfit(canCalculateRequirementsSum && canCalculateBuildsSum),
-    [canCalculateRequirementsSum, canCalculateBuildsSum]);
+  React.useEffect(() => {
+    setExpensesLabel(isNaN(sumRequirements) ? 'Cannot calculate' : sumRequirements.toString())
 
-  React.useEffect(
-    () => {
-      const profit: number = canCalculateProfit
-        ? roundTo((sumBuilds * (1 - (maddenTax / 100)) - sumRequirements), 2)
-        : NaN;
+    if (isNaN(sumBuilds)) {
+      setProceedsLabel('Cannot calculate');
+      setMaddenTaxLabel('Cannot calculate');
+    } else {
+      setProceedsLabel(sumBuilds.toString());
+      setMaddenTaxLabel(roundTo(sumBuilds * (MADDEN_TAX / 100), 2).toString());
+    }
 
-      setNetProfitLabel(invalidCalculateNumbers.has(profit) ? 'Cannot calculate' : profit.toString());
-    },
-    [canCalculateProfit, sumRequirements, sumBuilds]);
+    const profit: number = isNaN(sumRequirements) || isNaN(sumBuilds)
+      ? NaN
+      : roundTo((sumBuilds * (1 - (MADDEN_TAX / 100)) - sumRequirements), 2);
 
-  const onRequirementsValueChange = React.useCallback(
-    (index: number, newValue: number | null) => {
-      if (!requirementsValues) {
-        throw new Error('Need requirements values');
-      }
+    setProfitLabel(isNaN(profit) ? 'Cannot calculate' : profit.toString());
+  }, [sumRequirements, sumBuilds]);
 
-      requirementsValues[index] = newValue;
-      setRequirementsValues([...requirementsValues]);
-    },
-    [requirementsValues]);
+  const onRequirementsValueChange = React.useCallback((index: number, newValue: number) => {
+    if (!requirementsValues) {
+      throw new Error('Need requirements values');
+    }
 
-  const onBuildsValueChange = React.useCallback(
-    (index: number, newValue: number | null) => {
-      if (!buildsValues) {
-        throw new Error('Need builds values');
-      }
+    requirementsValues[index] = newValue;
+    setRequirementsValues([...requirementsValues]);
+  }, [requirementsValues]);
 
-      buildsValues[index] = newValue;
-      setBuildsValues([...buildsValues]);
-    },
-    [buildsValues]);
+  const onBuildsValueChange = React.useCallback((index: number, newValue: number) => {
+    if (!buildsValues) {
+      throw new Error('Need builds values');
+    }
+
+    buildsValues[index] = newValue;
+    setBuildsValues([...buildsValues]);
+  }, [buildsValues]);
 
   return (
     <Grid container justify='center'>
@@ -240,6 +238,7 @@ export const SetCalculatorPage: React.FC = () => {
               id='buildSetCalculatorCategoryDropdown'
               label='Category'
               map={categoryDropdownOptions}
+              value={categoryId}
               updateSelected={onCategoryDropdownChange} />
           </Grid>
         </Grid>
@@ -249,15 +248,20 @@ export const SetCalculatorPage: React.FC = () => {
               id='buildSetCalculatorSetDropdown'
               label='Set'
               map={setDropdownOptions || new Map<string, string>()}
+              value={setId}
               updateSelected={onSetDropdownChange} />
           </Grid>
         </Grid>
-        <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
-          <Grid item xs={12}>
-            <Typography display="block" variant='overline'>Inputs &amp; Outputs: Coin Values</Typography>
-            <Divider />
-          </Grid>
-        </Grid>
+        {
+          set
+            ? <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
+              <Grid item xs={12}>
+                <Typography display="block" variant='overline'>Inputs &amp; Outputs: Coin Values</Typography>
+                <Divider />
+              </Grid>
+            </Grid>
+            : null
+        }
         <Grid container item spacing={3} xs={12} sm={6} alignItems='stretch' direction='column'>
           {set?.requirements.map(
             (item: SetCalculatorSetItemProps, index: number) =>
@@ -282,31 +286,83 @@ export const SetCalculatorPage: React.FC = () => {
               </Grid>
           )}
         </Grid>
-        <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
-          <Grid item xs={12}>
-            <Typography display="block" variant='overline'>Profit</Typography>
-            <Divider />
-          </Grid>
-        </Grid>
-        <Grid container item spacing={3} xs={12} justify='flex-end' alignItems='stretch'>
-          <Grid item xs={6}>
-            {set
-              ? <TextField
-                label="Profit"
-                value={netProfitLabel}
-                InputProps={{
-                  readOnly: true
-                }}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                variant="outlined"
-                fullWidth
-              />
-              : null}
-          </Grid>
-        </Grid>
-      </Grid >
+        {
+          set
+            ? <Grid container item spacing={3} xs={12} justify='center' alignItems='stretch'>
+              <Grid item xs={12}>
+                <Typography display="block" variant='overline'>Calculations</Typography>
+                <Divider />
+              </Grid>
+            </Grid>
+            : null
+        }
+        {
+          set
+            ? <Grid container item spacing={3} xs={12} justify='flex-end' alignItems='stretch' direction='row'>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label='Proceeds'
+                  value={proceedsLabel}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant='outlined'
+                  fullWidth
+                  disabled={proceedsLabel === 'Cannot calculate'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label='Madden Tax'
+                  value={maddenTaxLabel}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant='outlined'
+                  fullWidth
+                  disabled={maddenTaxLabel === 'Cannot calculate'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label='Costs'
+                  value={expensesLabel}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant='outlined'
+                  fullWidth
+                  disabled={expensesLabel === 'Cannot calculate'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label='Profit'
+                  value={profitLabel}
+                  InputProps={{
+                    readOnly: true
+                  }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  variant='outlined'
+                  fullWidth
+                  disabled={profitLabel === 'Cannot calculate'}
+                />
+              </Grid>
+            </Grid>
+            : null
+        }
+      </Grid>
     </Grid>
   );
 };

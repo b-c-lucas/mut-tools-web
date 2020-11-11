@@ -19,5 +19,6 @@ export interface SetCalculatorConfigMap {
   id: string;
   label: string;
   map: Map<string, string>;
+  value: string;
   updateSelected: (key: string) => void;
 }
