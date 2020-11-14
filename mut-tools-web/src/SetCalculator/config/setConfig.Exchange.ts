@@ -1,6 +1,8 @@
+import { clone } from './configHelpers';
 import {
   SetCalculatorCategoryConfig,
-  SetCalculatorSetConfig
+  SetCalculatorSetConfig,
+  SetCalculatorSetItemProps
 } from '../SetCalculatorCommon';
 
 const ID: string = 'Exchange';
@@ -24,22 +26,13 @@ const config: Map<string, SetCalculatorSetConfig> = new Map<string, SetCalculato
 
 config.set(IDS.E_89_90, {
   setName: LABELS.E_89_90,
-  requirements: [
-    {
-      label: LABELS.E_87_88,
-      equivalent: IDS.E_87_88
-    },
-    {
-      label: LABELS.E_87_88,
-      equivalent: IDS.E_87_88
-    },
-    {
-      label: LABELS.E_87_88,
-      equivalent: IDS.E_87_88
-    }
-  ],
+  requirements: clone<SetCalculatorSetItemProps>({
+    id: IDS.E_87_88,
+    label: LABELS.E_87_88
+  }, 3),
   builds: [
     {
+      id: IDS.E_89_90,
       label: LABELS.E_89_90
     }
   ]

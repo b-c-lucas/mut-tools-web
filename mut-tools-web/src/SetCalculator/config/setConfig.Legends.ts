@@ -66,28 +66,29 @@ config.set(IDS.L_93B, {
   requirements: [
     {
       label: LABELS.L_91,
-      equivalent: IDS.L_91
+      id: IDS.L_91
     },
     {
       label: LABELS.L_89,
-      equivalent: IDS.L_89
+      id: IDS.L_89
     },
     {
       label: LABELS.L_87,
-      equivalent: IDS.L_87
+      id: IDS.L_87
     },
     {
       label: LABELS.L_86,
-      equivalent: IDS.L_86
+      id: IDS.L_86
     },
     {
       label: LABELS.L_85,
-      equivalent: IDS.L_85
+      id: IDS.L_85
     }
   ],
   builds: [
     {
-      label: LABELS.L_93B
+      label: LABELS.L_93B,
+      id: IDS.L_93B
     }
   ]
 });

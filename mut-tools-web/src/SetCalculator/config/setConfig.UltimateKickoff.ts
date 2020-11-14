@@ -1,6 +1,8 @@
+import { clone } from './configHelpers';
 import {
   SetCalculatorCategoryConfig,
-  SetCalculatorSetConfig
+  SetCalculatorSetConfig,
+  SetCalculatorSetItemProps
 } from '../SetCalculatorCommon';
 
 const ID: string = 'UltimateKickoff';
@@ -24,26 +26,13 @@ const config: Map<string, SetCalculatorSetConfig> = new Map<string, SetCalculato
 
 config.set(IDS.UK_90, {
   setName: LABELS.UK_90,
-  requirements: [
-    {
-      label: LABELS.UK_88,
-      equivalent: IDS.UK_88
-    },
-    {
-      label: LABELS.UK_88,
-      equivalent: IDS.UK_88
-    },
-    {
-      label: LABELS.UK_88,
-      equivalent: IDS.UK_88
-    },
-    {
-      label: LABELS.UK_88,
-      equivalent: IDS.UK_88
-    }
-  ],
+  requirements: clone<SetCalculatorSetItemProps>({
+    id: IDS.UK_88,
+    label: LABELS.UK_88
+  }, 4),
   builds: [
     {
+      id: IDS.UK_90,
       label: LABELS.UK_90
     }
   ]
