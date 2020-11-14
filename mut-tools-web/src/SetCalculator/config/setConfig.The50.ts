@@ -1,3 +1,4 @@
+import { clone } from './configHelpers';
 import {
   SetCalculatorCategoryConfig,
   SetCalculatorSetConfig,
@@ -35,31 +36,24 @@ const LABELS: ConfigDefinition = {
 
 const config: Map<string, SetCalculatorSetConfig> = new Map<string, SetCalculatorSetConfig>();
 
-const setStackedConfig: (id: string, setName: string, freshLabel: string) => void =
-  (id: string, setName: string, freshLabel: string) => {
-    const requirements: SetCalculatorSetItemProps[] = [];
-    const requirement: SetCalculatorSetItemProps = {
+const setStackedConfig: (id: string, setName: string, freshId: string, freshLabel: string) => void =
+  (id: string, setName: string, freshId: string, freshLabel: string) => config.set(id, {
+    setName: setName,
+    requirements: clone<SetCalculatorSetItemProps>({
+      id: freshId,
       label: freshLabel
-    };
+    }, 32),
+    builds: [
+      {
+        id: id,
+        label: setName
+      }
+    ]
+  });
 
-    for (let i = 0; i < 32; i++) {
-      requirements.push(requirement);
-    }
-
-    config.set(id, {
-      setName: setName,
-      requirements: requirements,
-      builds: [
-        {
-          label: setName
-        }
-      ]
-    });
-  };
-
-setStackedConfig(IDS.TF_91, LABELS.TF_91, LABELS.TF_81P);
-setStackedConfig(IDS.TF_92, LABELS.TF_92, LABELS.TF_82P);
-setStackedConfig(IDS.TF_93, LABELS.TF_93, LABELS.TF_83P);
+setStackedConfig(IDS.TF_91, LABELS.TF_91, IDS.TF_81P, LABELS.TF_81P);
+setStackedConfig(IDS.TF_92, LABELS.TF_92, IDS.TF_82P, LABELS.TF_82P);
+setStackedConfig(IDS.TF_93, LABELS.TF_93, IDS.TF_83P, LABELS.TF_83P);
 
 export const CATEGORY_CONFIG: SetCalculatorCategoryConfig = {
   id: 'The50',

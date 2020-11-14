@@ -1,4 +1,5 @@
 export interface SetCalculatorSetItemProps {
+  id: string;
   label: string;
   equivalent?: string;
 }

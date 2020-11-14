@@ -1,3 +1,4 @@
+import { clone } from './configHelpers';
 import {
   SetCalculatorCategoryConfig,
   SetCalculatorSetConfig
@@ -35,21 +36,20 @@ const config: Map<string, SetCalculatorSetConfig> = new Map<string, SetCalculato
 config.set(IDS.MF_90, {
   setName: LABELS.MF_90,
   requirements: [
-    {
-      label: LABELS.MF_87
-    },
-    {
-      label: LABELS.MF_87
-    },
-    {
-      label: LABELS.MF_85
-    },
-    {
-      label: LABELS.MF_85
-    }
+    ...clone(
+      {
+        id: IDS.MF_87,
+        label: LABELS.MF_87
+      }, 2),
+    ...clone(
+      {
+        id: IDS.MF_85,
+        label: LABELS.MF_85
+      }, 2)
   ],
   builds: [
     {
+      id: IDS.MF_90,
       label: LABELS.MF_90
     }
   ]
@@ -58,34 +58,35 @@ config.set(IDS.MF_90, {
 config.set(IDS.MF_92, {
   setName: LABELS.MF_92,
   requirements: [
-    {
-      label: LABELS.MF_90,
-      equivalent: IDS.MF_90
-    },
-    {
-      label: LABELS.MF_90,
-      equivalent: IDS.MF_90
-    },
+    ...clone(
+      {
+        id: IDS.MF_90,
+        label: LABELS.MF_90
+      }, 2),
     {
       label: LABELS.MF_87,
-      equivalent: IDS.MF_87
+      id: IDS.MF_87
     },
     {
       label: LABELS.MF_85,
-      equivalent: IDS.MF_85
+      id: IDS.MF_85
     }
   ],
   builds: [
     {
+      id: IDS.MF_92,
       label: LABELS.MF_92
     },
     {
+      id: IDS.MF_92PU,
       label: LABELS.MF_92PU
     },
     {
+      id: IDS.MF_90_NAT,
       label: LABELS.MF_90_NAT
     },
     {
+      id: IDS.MF_90_NAT,
       label: LABELS.MF_90_NAT
     }
   ]
